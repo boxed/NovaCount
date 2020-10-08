@@ -14,7 +14,7 @@ let onIPad = UIDevice.current.userInterfaceIdiom == .pad
 let size: CGFloat = onIPad ? 3 : 1
 
 struct ContentView: View {
-    var numbers = 0...100
+    var numbers = -1000...1000
     @State var answers: [Bool] = []
     @State var difficulty = initialStarDifficulty * 10
     
@@ -29,7 +29,7 @@ struct ContentView: View {
     @State var right: Int = Int.random(in: 1...initialStarDifficulty)
     @State var answer: Int? = nil
     @State var wrongAnswers = 0
-//    @State var scrollViewProxy: ScrollViewProxy? = nil
+    @State var scrollViewProxy: ScrollViewProxy? = nil
     
     init() {
            //Use this if NavigationBarTitle is with Large Font
@@ -73,30 +73,36 @@ struct ContentView: View {
             
             // Numbers to choose from
             ScrollView(.horizontal, showsIndicators: false) {
-//                ScrollViewReader { scrollView in
-                    HStack {
+                ScrollViewReader { scrollView in
+                    HStack(spacing: 0) {
+                        let buttonWidth = 30*size
                         ForEach(self.numbers, id: \.self) { number in
                             Button(action: {self.answer = number}) {
-                                Text("\(number)")
-                                .font(.system(size: 10*size))
-                                .frame(width: 30*size, height: 70*size)
+                                VStack {
+                                    Path { path in
+                                        path.move(to: CGPoint(x: buttonWidth/2, y: 0))
+                                        path.addLine(to: CGPoint(x: buttonWidth/2, y: 10))
+                                        path.move(to: CGPoint(x: 0, y: 0))
+                                        path.addLine(to: CGPoint(x: buttonWidth, y: 0))
+                                    }
+                                    .stroke()
+                                    .frame(width: buttonWidth, height: 10)
+
+                                    Text("\(number)")
+                                    .font(.system(size: 10*size))
+                                    .frame(width: buttonWidth, height: 20*size)
+                                }
                             }
+                            .padding(.horizontal, 0)
                         }
                     }
-//                    .onAppear {
-//                        scrollView.scrollTo(0, anchor: .center)
-//                        scrollViewProxy = scrollView
-//                    }
-//                }
+                    .onAppear {
+                        scrollView.scrollTo(0, anchor: .center)
+                        scrollViewProxy = scrollView
+                    }
+                }
             }
             .padding(.horizontal)
-//            Button(action: {
-//                if let scrollViewProxy = scrollViewProxy {
-//                    scrollViewProxy.scrollTo(0, anchor: .center)
-//                }
-//            }) {
-//                Text("0")
-//            }
             
             // Answer button
             Button(action: {
@@ -123,6 +129,18 @@ struct ContentView: View {
                 Text("Svara").padding()
             }
             .background(RoundedRectangle(cornerRadius: 4.0).stroke(Color.purple))
+            
+            HStack {
+                ForEach([-1000, -500, -100, 0, 100, 500, 1000], id: \.self) { number in
+                    Button(action: {
+                        if let scrollViewProxy = scrollViewProxy {
+                            scrollViewProxy.scrollTo(number, anchor: .center)
+                        }
+                    }) {
+                        Text("\(number)")
+                    }
+                }
+            }
         }
         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity, alignment: .topLeading)
         .background(Rectangle().fill(Color.black)).foregroundColor(Color.white)
