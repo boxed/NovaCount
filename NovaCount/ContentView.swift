@@ -1,5 +1,7 @@
 import SwiftUI
 
+// Bigger star for finishing harder levels?
+
 
 func answerToString(_ i: Int?) -> String {
     if let i = i {
@@ -18,7 +20,9 @@ func additionProblems(level: Int) -> [(Int, Int)] {
     let end = start + 4
     return (max(start, 1)...end).flatMap { x in
         (1...Int(ceil(Double(x)/2.0))).enumerated().map { i, y in
-            (x - i, y)
+            let (a, b) = (x - i, y)
+            // Randomize if the bigger number if to the left or to the right
+            return Bool.random() ? (a, b) : (b, a)
         }
     }.shuffled()
 }
@@ -41,13 +45,14 @@ func colorFromAnswer(_ answer: Answer) -> Color {
     }
 }
 
+
 struct ContentView: View {
     var numbers = -1000...1000
     @State var answers: [Answer] = (0..<(startProblems.count)).map { _ in Answer.unanswered }
     @State var level = 1;
     @State var problems: ArraySlice<(Int, Int)> = startProblems
     @State var currentProblem = 0
-    @State var finishedLevels = 1
+    @State var score = ""
     
     @State var answer: Int? = nil
     @State var wrongAnswers = 0
@@ -85,13 +90,21 @@ struct ContentView: View {
     
     func nextProblem() {
         if currentProblem == problems.count - 1 {
-            // TODO: show some happy animation that you've completed the level
+            if answers.allSatisfy({answer in answer == .correct}) {
+                score += "⭐️"
+            }
+            else if answers.allSatisfy({answer in answer == .incorrect}) {
+                score += "🙁"
+            }
+            else {
+                score += "✭"
+            }
             newRound()
-            finishedLevels += 1
         }
         else {
             currentProblem += 1
         }
+        wrongAnswers = 0
     }
     
     var points: some View {
@@ -104,11 +117,7 @@ struct ContentView: View {
     }
     
     var stars: some View {
-        HStack {
-            ForEach(0..<finishedLevels, id: \.self) { _ in
-                Text("⭐️").font(.system(size: 50))
-            }
-        }
+        Text(score).font(.system(size: 50))
         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 40*size, maxHeight: 40*size, alignment: .center)
     }
     
